@@ -1,8 +1,26 @@
 (ns app.core
-  (:require [zenframe.core :as z]
-            [stylo.core :refer [c]]
-            [re-frame.core :as rf]
-            [app.pages :as pages]))
+  #?@
+   (:clj
+    [(:require [garden.core :as gc] [zenframe.core :as z])]
+    :cljs
+    [(:require [reagent.dom :as rd]
+               [garden.core :as gc]
+               [zenframe.core :as z]
+               [goog.string :as gstring]
+               [goog.string.format])
+     (:require-macros [zenframe.core :as z])]))
+
+(def style
+  (gc/css
+   [:body
+    [:.wrapper {:display "flex"
+                :flex-wrap "wrap"}
+     [:div.button {:flex "1 1 100px"
+                   :border "none"
+                   :padding "5px 20px"
+                   :text-align "center"
+                   :text-decoration "none"
+                   :font-size "8px"}]]]))
 
 (def page-key :zenframe/index)
 
@@ -11,31 +29,54 @@
   [{db :db}]
   {:db (assoc db :model "Here")})
 
+(defn get-color []
+  (let [d (new js/Date)
+        ms (.getMilliseconds d)
+        base (int (* (/ ms 1000) 256))]
+    (str "hsl(" base ", 80%, 50%)")))
+
 (defn on-click
   {:cursor [::page]}
-  [{db :db}]
-  {:db (update db :inc #(inc (or % 0)))})
+  [{db :db} id]
+  {:db (-> db
+           (update :inc #(inc (or % 0)))
+           (assoc-in [:e id] (get-color)))})
 
 (defn model
   {:cursor [::page]}
   [db] db)
 
-(rf/reg-event-ctx page-key (fn [fx & _] (z/>> #'init)))
-
 (defn db-state []
   [:pre (pr-str @z/app-db)])
 
 (z/defv work-view [m #'model]
-  [:div {:class (c [:p 2])}
-   [:pre {:class (c :display-block [:p 2] [:bg :gray-100])} (pr-str m)]
-   #_[:button {:class (c :border [:p 2] [:bg :gray-200])
-             :on-click #(z/>> #'on-click)} "Click me"]])
+  [:div
+   (into
+    [:div {:class "wrapper"}]
+    (mapv (fn [id]
+             [:div
+              {:class "button"
+               :onMouseMove #(z/>> #'on-click id)
+               :style {:background-color (get-in m [:e id])
+                       ;;:background-color "hsl(120, 100%, 50%)"
+                       }}
+              (get-in m [:e id])])
+          (range 200)))
+   [:pre (pr-str m)]])
 
 (defn index []
-  [:div]
-  [:div
-   [work-view]
-   [:hr]
-   [db-state]])
+  [:html
+   [:head
+    [:style style]]
+   [:body
+    [:div
+     [work-view]
+     [:hr]
+      [db-state]]]])
 
-(pages/reg-page page-key #'index)
+(defn init! []
+   (z/>> #'init)
+  #?(:cljs (rd/render [index] (.getElementById js/document "app"))))
+
+(init!)
+;; (pages/reg-page page-key #'index)

@@ -29,19 +29,17 @@
                 app-db)]
        (reagent.core/track (fn [args] (apply sub @db args)) args))))
 
-
-#?(:clj
-   (defmacro defv
-     [name subs body]
-     (let [subs (->> subs
-                     (partition 2)
-                     (map (fn [[b nm]]
-                            (let [n (gensym "sub")]
-                              [[n (list 'zenframe.core/<< nm)]
-                               [b (list 'deref n)]]))))]
-       `(defn ~name
-          []
-          (let [~@(mapcat first subs)]
-            (fn []
-              (let [~@(mapcat second subs)]
-                ~body)))))))
+(defmacro defv
+  [name subs body]
+  (let [subs (->> subs
+                  (partition 2)
+                  (map (fn [[b nm]]
+                         (let [n (gensym "sub")]
+                           [[n (list 'zenframe.core/<< nm)]
+                            [b (list 'deref n)]]))))]
+    `(defn ~name
+       []
+       (let [~@(mapcat first subs)]
+         (fn []
+           (let [~@(mapcat second subs)]
+             ~body))))))
