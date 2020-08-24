@@ -1,4 +1,4 @@
-(ns app.zenframe
+(ns app.core
   (:require [zenframe.core :as z]
             [stylo.core :refer [c]]
             [re-frame.core :as rf]
@@ -33,10 +33,9 @@
 
 (defn index []
   [:div]
-  #_[:div {:class (c [:p 30])}
+  [:div
    [work-view]
    [:hr]
    [db-state]])
 
 (pages/reg-page page-key #'index)
-
