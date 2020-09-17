@@ -65,14 +65,13 @@
    [:pre (pr-str m)]])
 
 (defn index []
-  [:html
-   [:head
-    [:style style]]
+  [:<>
+   [:style style]
    [:body
     [:div
      [work-view]
      [:hr]
-      [db-state]]]])
+     [db-state]]]])
 
 (defn init! []
    (z/>> #'init)
