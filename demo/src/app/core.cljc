@@ -10,6 +10,8 @@
                [goog.string.format])
      (:require-macros [zenframe.core :as z])]))
 
+(def number-of-elements 200)
+
 (def style
   (gc/css
    [:body
@@ -27,7 +29,9 @@
 (defn init
   {:cursor [::page]}
   [{db :db}]
-  {:db (assoc db :model "Here")})
+  {:db (-> (reduce #(assoc-in %1 [:e %2] "hsl(10, 80%, 50%)") db (range number-of-elements))
+           (assoc :model "Here"))})
+
 
 (defn get-color []
   (let [d (new js/Date)
@@ -61,7 +65,7 @@
                        ;;:background-color "hsl(120, 100%, 50%)"
                        }}
               (get-in m [:e id])])
-          (range 200)))
+          (range number-of-elements)))
    [:pre (pr-str m)]])
 
 (defn index []
