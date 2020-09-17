@@ -71,11 +71,10 @@
 (defn index []
   [:<>
    [:style style]
-   [:body
-    [:div
-     [work-view]
-     [:hr]
-     [db-state]]]])
+   [:div
+    [work-view]
+    [:hr]
+    [db-state]]])
 
 (defn init! []
    (z/>> #'init)
