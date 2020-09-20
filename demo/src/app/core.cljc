@@ -44,7 +44,7 @@
   [{db :db} id]
   {:db (-> db
            (update :inc #(inc (or % 0)))
-           (assoc-in [:e id] (get-color)))})
+           (assoc-in [:e id] (get-color)))}) ;; TODO move side effect outside
 
 (defn model
   {:cursor [::page]}
