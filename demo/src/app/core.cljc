@@ -34,11 +34,11 @@
            (assoc :model "Here"))})
 
 
-(defn get-color-cofx [coeffects _]
+(defn get-color-cofx [cofx _]
   (let [ms #?(:cljs (.getMilliseconds (new js/Date))
               :clj 100)
         base (int (* (/ ms 1000) 256))]
-    (assoc coeffects :color (str "hsl(" base ", 80%, 50%)"))))
+    (assoc cofx :color (str "hsl(" base ", 80%, 50%)"))))
 
 (z/reg-cofx! :random-color get-color-cofx)
 

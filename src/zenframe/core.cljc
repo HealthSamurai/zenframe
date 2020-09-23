@@ -1,5 +1,5 @@
 (ns zenframe.core
-  (:require [reagent.core]
+  (:require #?(:cljs [reagent.core])
             [zenframe.fx-cofx :refer [register-handler! unregister-handler! get-handler]]))
 
 (def app-db
@@ -21,25 +21,20 @@
 (defn do-fx [id ]
   )
 
-(defn get-cofx [cofx]
-  (get-handler :cofx cofx))
-
 (reg-cofx!
  :db
  (fn db-coeffects-handler
-   [coeffects cursor]
+   [cofx [_ cursor]]
    (let [edb (if (some? cursor)
-               (do
-                 (println "cur>>" cursor)
-                 #?(:cljs (reagent.core/cursor app-db cursor)
-                    :clj app-db))
+               #?(:cljs (reagent.core/cursor app-db cursor)
+                  :clj app-db)
                app-db)]
-     (assoc coeffects :db @edb))))
+     (assoc cofx :db @edb))))
 
 (defn inject-cofx [cofx ctx]
-  (if (vector? cofx)
-    (apply (get-cofx (first cofx)) ctx (rest cofx))
-    ((get-cofx cofx) ctx)))
+  (as-> cofx $
+    (cond-> $ (not (vector? $)) (vector $))
+    ((get-handler :cofx (first $)) ctx cofx)))
 
 (defn inject-cofx* [cofx* ctx]
   ((apply comp (mapv #(partial inject-cofx %) cofx*)) ctx))
@@ -50,12 +45,14 @@
 (defn >>
   "dispatch event (z/>> #'ev {})"
   [ev & args]
+  (println ">>" (:name (meta ev)))
   (let [coeffects (-> (:cofx* (meta ev))
                       (conj [:db (:cursor (meta ev))]))
-        cofx (inject-cofx* coeffects nil)]
+        cofx (inject-cofx* coeffects nil)
+        fx (apply ev cofx args)]
     (let [{db :db :as res} (apply ev cofx args)]
-      (println db)
-      (when db (reset! (reagent.core/cursor app-db [:app.core/page]) db))
+      (when db (reset! #?(:cljs (reagent.core/cursor app-db [:app.core/page])
+                          :clj app-db) db))
       res)))
 
 (defn <<
