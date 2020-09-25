@@ -26,13 +26,13 @@
 
 (def page-key :zenframe/index)
 
-(defn init
+(defn on-click
   {:cursor [::page]
    :cofx* [:random-color]}
-  [{db :db}]
-  {:db (-> (reduce #(assoc-in %1 [:e %2] "hsl(10, 80%, 50%)") db (range number-of-elements))
-           (assoc :model "Here"))})
-
+  [{db :db color :color} id]
+  {:db (-> db
+           (update :inc #(inc (or % 0)))
+           (assoc-in [:e id] color))})
 
 (defn get-color-cofx [cofx _]
   (let [ms #?(:cljs (.getMilliseconds (new js/Date))
@@ -42,13 +42,13 @@
 
 (z/reg-cofx! :random-color get-color-cofx)
 
-(defn on-click
+(defn init
   {:cursor [::page]
    :cofx* [:random-color]}
-  [{db :db color :color} id]
-  {:db (-> db
-           (update :inc #(inc (or % 0)))
-           (assoc-in [:e id] color))})
+  [{db :db}]
+  {:db (-> (reduce #(assoc-in %1 [:e %2] "hsl(10, 80%, 50%)") db (range number-of-elements))
+           (assoc :model "Here"))
+   :>> [#'on-click 1]})
 
 (defn model
   {:cursor [::page]}

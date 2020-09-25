@@ -1,7 +1,7 @@
-(ns zenframe.fx-cofx)
+(ns zenframe.registrar)
 
 
-(def fx&cofx-map (atom {}))
+(def fx&cofx-map "structure that stores effects and coeffects handlers" (atom {}))
 
 (defn register-handler!
   [kind id handler-fn]
@@ -14,3 +14,4 @@
 (defn get-handler
   [kind id]
   (get-in @fx&cofx-map [kind id]))
+
